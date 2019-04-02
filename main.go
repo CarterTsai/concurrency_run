@@ -4,6 +4,7 @@ import (
 	"concurrency_run/tools"
 	"fmt"
 	"math"
+	"os/exec"
 	"runtime"
 )
 
@@ -13,6 +14,14 @@ import (
 func check(e error) {
 	if e != nil {
 		panic(e)
+	}
+}
+
+func execCmdBy(data []string) {
+	cmd := exec.Command("echo", "Hello")
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
@@ -33,7 +42,8 @@ func main() {
 			go func() {
 				if len(dat) > 0 {
 					x, dat = dat[len(dat)-1], dat[:len(dat)-1]
-					fmt.Println(tools.ReadLines(x))
+					content, _ := tools.ReadLines(x)
+					execCmdBy(content)
 					ch <- x
 				} else {
 					ch <- ""
