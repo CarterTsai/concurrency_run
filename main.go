@@ -6,6 +6,7 @@ import (
 	"math"
 	"os/exec"
 	"runtime"
+	"sync"
 )
 
 // 平行處理參考這邊
@@ -28,12 +29,12 @@ func execCmdBy(data []string) {
 func main() {
 	dat, err := tools.ReadLines("./csv/file.txt")
 	check(err)
+	
+	var mutex = &sync.Mutex{}
 
 	nCPU := runtime.NumCPU()
 	maxNum := float64(len(dat)) / float64(nCPU)
 	nNum := int(math.Round(maxNum))
-	// idx := 0
-	result := ""
 	x := ""
 	ch := make(chan string)
 
@@ -41,9 +42,11 @@ func main() {
 		for i := 0; i < nCPU; i++ {
 			go func() {
 				if len(dat) > 0 {
+					mutex.Lock()
 					x, dat = dat[len(dat)-1], dat[:len(dat)-1]
 					content, _ := tools.ReadLines(x)
 					execCmdBy(content)
+					mutex.Unlock()
 					ch <- x
 				} else {
 					ch <- ""
@@ -52,8 +55,7 @@ func main() {
 		}
 
 		for i := 0; i < nCPU; i++ {
-			result = <-ch
-			fmt.Println(result)
+			<-ch
 		}
 	}
 }
